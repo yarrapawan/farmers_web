@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>రైతు సమాచారం / விவசாய தகவல்</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;500;700&family=Noto+Sans+Tamil:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #FFC107;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Noto Sans Telugu', 'Noto Sans Tamil', sans-serif;
+            background-color: var(--light-bg);
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .language-selector {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .lang-btn {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 20px;
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .lang-btn:hover, .lang-btn.active {
+            background-color: white;
+            color: var(--primary-color);
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: 500;
+        }
+        
+        .price-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .price-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .price-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .price-change {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .price-up {
+            color: #28a745;
+        }
+        
+        .price-down {
+            color: #dc3545;
+        }
+        
+        .weather-icon {
+            font-size: 3rem;
+            color: var(--secondary-color);
+        }
+        
+        .crop-icon {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            padding: 10px;
+        }
+        
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 20px 0;
+            margin-top: 30px;
+        }
+        
+        .state-selector {
+            margin-bottom: 20px;
+        }
+        
+        .district-selector, .crop-selector {
+            margin-bottom: 20px;
+        }
+        
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .custom-alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease-out;
+            transition: opacity 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .alert-success {
+            background-color: #28a745;
+        }
+        
+        .alert-danger {
+            background-color: #dc3545;
+        }
+        
+        .alert-info {
+            background-color: #17a2b8;
+        }
+        
+        .crop-image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .crop-details {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .crop-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 10px;
+            color: #495057;
+        }
+        
+        .crop-season {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="language-selector">
+                <button class="lang-btn active" data-lang="te">తెలుగు</button>
+                <button class="lang-btn" data-lang="ta">தமிழ்</button>
+                <button class="lang-btn" data-lang="en">English</button>
+            </div>
+            <h1 class="text-center" data-translate="title">రైతు సమాచార వేదిక</h1>
+            <p class="text-center mb-0" data-translate="subtitle">ధరలు, వాతావరణం మరియు అంచనాల సమాచారం</p>
+        </div>
+    </div>
+    <div class="container my-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header" data-translate="filters">వడపోత ఎంపికలు</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 state-selector">
+                                <label for="stateSelect" class="form-label" data-translate="state">రాష్ట్రం</label>
+                                <select class="form-select" id="stateSelect">
+                                    <option value="ap" data-translate="andhra">ఆంధ్రప్రదేశ్</option>
+                                    <option value="tn" data-translate="tamilnadu">తమిళనాడు</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 district-selector">
+                                <label for="districtSelect" class="form-label" data-translate="district">జిల్లా</label>
+                                <select class="form-select" id="districtSelect">
+                                    <!-- Districts will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="col-md-4 crop-selector">
+                                <label for="cropSelect" class="form-label" data-translate="crop">పంట</label>
+                                <select class="form-select" id="cropSelect">
+                                    <option value="rice" data-translate="rice">వరి</option>
+                                    <option value="groundnut" data-translate="groundnut">వేరుశనగ</option>
+                                    <option value="maize" data-translate="maize">మొక్కజొన్న</option>
+                                    <option value="turmeric" data-translate="turmeric">పసుపు</option>
+                                    <option value="cotton" data-translate="cotton">పత్తి</option>
+                                    <option value="chillies" data-translate="chillies">మిరప</option>
+                                    <option value="sugarcane" data-translate="sugarcane">చెరకు</option>
+                                    <option value="mango" data-translate="mango">మామిడి</option>
+                                    <option value="paddy" data-translate="paddy">వరి</option>
+                                    <option value="grapes" data-translate="grapes">ద్రాక్ష</option>
+                                    <option value="tobacco" data-translate="tobacco">పొగాకు</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-primary" id="searchBtn" data-translate="search">సమాచారం పొందండి</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="resultsContainer" style="display: none;">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" data-translate="priceInfo">ధర సమాచారం</div>
+                    <div class="card-body">
+                        <div class="crop-image-container">
+                            <div class="crop-details">
+                                <img id="cropImage" src="" alt="Crop" class="crop-icon">
+                                <div class="crop-name" id="cropName">Rice</div>
+                                <div class="crop-season" id="cropSeason">Kharif</div>
+                            </div>
+                        </div>
+                        
+                        <div class="price-card">
+                            <div class="price-label" data-translate="currentPrice">ప్రస్తుత ధర</div>
+                            <div class="price-value" id="currentPrice">₹25</div>
+                        </div>
+                        
+                        <div class="price-card">
+                            <div class="price-label" data-translate="lastYearPrice">గత సంవత్సరం ధర</div>
+                            <div class="price-value" id="lastYearPrice">₹22</div>
+                            <div class="price-change price-up" id="priceChange">
+                                <span>▲ 13.6% <span data-translate="increase">పెరిగింది</span></span>
+                            </div>
+                        </div>
+                        
+                        <div class="price-card">
+                            <div class="price-label" data-translate="nextYearPrediction">తదుపరి సంవత్సరం అంచనా</div>
+                            <div class="price-value" id="nextYearPrice">₹28</div>
+                            <div class="price-change price-up" id="nextYearChange">
+                                <span>▲ 12% <span data-translate="predictedIncrease">పెరగనుంది</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" data-translate="weatherInfo">వాతావరణ సమాచారం</div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <div class="weather-icon">🌧</div>
+                            <h4 id="season" data-translate="kharif">ఖరీఫ్</h4>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="price-card">
+                                    <div class="price-label" data-translate="rainfall">సగటు వర్షపాతం</div>
+                                    <div class="price-value" id="avgRainfall">700mm</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="price-card">
+                                    <div class="price-label" data-translate="temperature">సగటు ఉష్ణోగ్రత</div>
+                                    <div class="price-value" id="avgTemp">28°C</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="price-card mt-3">
+                            <div class="price-label" data-translate="production">ఉత్పత్తి</div>
+                            <div class="price-value" id="production">2500 క్వింటాలు</div>
+                        </div>
+                        
+                        <div class="price-card">
+                            <div class="price-label" data-translate="areaYield">ప్రాంత దిగుబడి</div>
+                            <div class="price-value" id="areaYield">500 హెక్టార్లు</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="alert-container" id="alertContainer"></div>
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 data-translate="about">గురించి</h5>
+                    <p data-translate="aboutText">ఈ వేదిక రైతులకు పంట ధరలు, వాతావరణ పరిస్థితులు మరియు భవిష్యత్ అంచనాలను అందిస్తుంది.</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 data-translate="contact">సంప్రదింపులు</h5>
+                    <p data-translate="contactText">సహాయం కోసం దయచేసి మాతో సంప్రదించండి: farmerinfo@example.com</p>
+                </div>
+            </div>
+            <hr class="bg-white">
+            <div class="text-center">
+                <p class="mb-0" data-translate="copyright">&copy; 2024 రైతు సమాచార వేదిక. అన్ని హక్కులు ప్రత్యేకించబడ్డాయి.</p>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Agriculture data from the provided Excel sheet (Andhra Pradesh)
+        const andhraData = [
+            {id: 1, district: "Anantapur", crop: "Rice", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 25},
+            {id: 2, district: "Visakhapatnam", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 35},
+            {id: 3, district: "Kurnool", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 18},
+            {id: 4, district: "Guntur", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 40},
+            {id: 5, district: "Prakasam", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 30},
+            {id: 6, district: "Kadapa", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 45},
+            {id: 7, district: "Srikakulam", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 28},
+            {id: 8, district: "Vizianagaram", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 60},
+            {id: 9, district: "East Godavari", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 23},
+            {id: 10, district: "Chittoor", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 55},
+            {id: 11, district: "West Godavari", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 32},
+            {id: 12, district: "Anantapur", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 37},
+            {id: 13, district: "Visakhapatnam", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 24},
+            {id: 14, district: "Kurnool", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 42},
+            {id: 15, district: "Guntur", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 17},
+            {id: 16, district: "Prakasam", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 43},
+            {id: 17, district: "Kadapa", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 29},
+            {id: 18, district: "Srikakulam", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 55},
+            {id: 19, district: "Vizianagaram", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 26},
+            {id: 20, district: "East Godavari", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 58},
+            {id: 21, district: "Chittoor", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 22},
+            {id: 22, district: "West Godavari", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 31},
+            {id: 23, district: "Anantapur", crop: "Rice", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 26},
+            {id: 24, district: "Visakhapatnam", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 36},
+            {id: 25, district: "Kurnool", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 19},
+            {id: 26, district: "Guntur", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 41},
+            {id: 27, district: "Prakasam", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 32},
+            {id: 28, district: "Kadapa", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 44},
+            {id: 29, district: "Srikakulam", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 27},
+            {id: 30, district: "Vizianagaram", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 61},
+            {id: 31, district: "East Godavari", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 24},
+            {id: 32, district: "Chittoor", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 56},
+            {id: 33, district: "West Godavari", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 33},
+            {id: 34, district: "Anantapur", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 38},
+            {id: 35, district: "Visakhapatnam", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 23},
+            {id: 36, district: "Kurnool", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 43},
+            {id: 37, district: "Guntur", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 16},
+            {id: 38, district: "Prakasam", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 42},
+            {id: 39, district: "Kadapa", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 31},
+            {id: 40, district: "Srikakulam", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 59},
+            {id: 41, district: "Vizianagaram", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 25},
+            {id: 42, district: "East Godavari", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 57},
+            {id: 43, district: "Chittoor", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 21},
+            {id: 44, district: "West Godavari", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 30},
+            {id: 45, district: "Anantapur", crop: "Rice", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 27},
+            {id: 46, district: "Visakhapatnam", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 38},
+            {id: 47, district: "Kurnool", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 20},
+            {id: 48, district: "Guntur", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 39},
+            {id: 49, district: "Prakasam", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 34},
+            {id: 50, district: "Kadapa", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 41},
+            {id: 51, district: "Srikakulam", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 29},
+            {id: 52, district: "Vizianagaram", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 63},
+            {id: 53, district: "East Godavari", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 25},
+            {id: 54, district: "Chittoor", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 59},
+            {id: 55, district: "West Godavari", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 35},
+            {id: 56, district: "Anantapur", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 40},
+            {id: 57, district: "Visakhapatnam", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 22},
+            {id: 58, district: "Kurnool", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 44},
+            {id: 59, district: "Guntur", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 15},
+            {id: 60, district: "Prakasam", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 40},
+            {id: 61, district: "Kadapa", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 33},
+            {id: 62, district: "Srikakulam", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 62},
+            {id: 63, district: "Vizianagaram", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 24},
+            {id: 64, district: "East Godavari", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 60},
+            {id: 65, district: "Chittoor", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 20},
+            {id: 66, district: "West Godavari", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 29},
+            {id: 67, district: "Anantapur", crop: "Rice", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 28},
+            {id: 68, district: "Visakhapatnam", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 37},
+            {id: 69, district: "Kurnool", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 21},
+            {id: 70, district: "Guntur", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 38}
+        ];
+        // Tamil Nadu agriculture data from the provided Excel sheet
+        const tamilNaduData = [
+            {id: 101, district: "Ariyalur", crop: "Rice", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 25},
+            {id: 102, district: "Chengalpattu", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 35},
+            {id: 103, district: "Chennai", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 18},
+            {id: 104, district: "Coimbatore", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 40},
+            {id: 105, district: "Cuddalore", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 30},
+            {id: 106, district: "Dharmapuri", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 45},
+            {id: 107, district: "Dindigul", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 28},
+            {id: 108, district: "Erode", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 60},
+            {id: 109, district: "Kallakurichi", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 23},
+            {id: 110, district: "Kanchipuram", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 55},
+            {id: 111, district: "Kanyakumari", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 32},
+            {id: 112, district: "Karur", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 37},
+            {id: 113, district: "Krishnagiri", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 24},
+            {id: 114, district: "Madurai", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 42},
+            {id: 115, district: "Mayiladuthurai", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 17},
+            {id: 116, district: "Nagapattinam", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 43},
+            {id: 117, district: "Namakkal", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 29},
+            {id: 118, district: "Nilgiris", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 55},
+            {id: 119, district: "Perambalur", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 26},
+            {id: 120, district: "Pudukkottai", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 58},
+            {id: 121, district: "Ramanathapuram", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 22},
+            {id: 122, district: "Ranipet", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 31},
+            {id: 123, district: "Salem", crop: "Rice", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 26},
+            {id: 124, district: "Sivaganga", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 36},
+            {id: 125, district: "Tenkasi", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 19},
+            {id: 126, district: "Thanjavur", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 41},
+            {id: 127, district: "Theni", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 32},
+            {id: 128, district: "Thoothukudi", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 44},
+            {id: 129, district: "Tiruchirappalli", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 27},
+            {id: 130, district: "Tirunelveli", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 61},
+            {id: 131, district: "Tirupathur", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 24},
+            {id: 132, district: "Tiruppur", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 56},
+            {id: 133, district: "Tiruvallur", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 33},
+            {id: 134, district: "Tiruvannamalai", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 38},
+            {id: 135, district: "Tiruvarur", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 23},
+            {id: 136, district: "Vellore", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 43},
+            {id: 137, district: "Viluppuram", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 16},
+            {id: 138, district: "Virudhunagar", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 42},
+            {id: 139, district: "Kallakurichi", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 31},
+            {id: 140, district: "Kanchipuram", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 59},
+            {id: 141, district: "Kanyakumari", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 25},
+            {id: 142, district: "Karur", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 57},
+            {id: 143, district: "Krishnagiri", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 21},
+            {id: 144, district: "Madurai", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 30},
+            {id: 145, district: "Mayiladuthurai", crop: "Rice", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 27},
+            {id: 146, district: "Nagapattinam", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 38},
+            {id: 147, district: "Namakkal", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 20},
+            {id: 148, district: "Nilgiris", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 39},
+            {id: 149, district: "Perambalur", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 34},
+            {id: 150, district: "Pudukkottai", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 41},
+            {id: 151, district: "Ramanathapuram", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 29},
+            {id: 152, district: "Ranipet", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 63},
+            {id: 153, district: "Salem", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 25},
+            {id: 154, district: "Dharmapuri", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 59},
+            {id: 155, district: "Dindigul", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 35},
+            {id: 156, district: "Erode", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 40},
+            {id: 157, district: "Kallakurichi", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 22},
+            {id: 158, district: "Kanchipuram", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 44},
+            {id: 159, district: "Kanyakumari", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 15},
+            {id: 160, district: "Karur", crop: "Chillies", season: "Rabi", year: 2024, area_yield: 250, production: 1200, avg_rainfall: 400, market_price: 40},
+            {id: 161, district: "Krishnagiri", crop: "Cotton", season: "Kharif", year: 2024, area_yield: 700, production: 3500, avg_rainfall: 450, market_price: 33},
+            {id: 162, district: "Madurai", crop: "Mango", season: "Summer", year: 2024, area_yield: 200, production: 800, avg_rainfall: 300, market_price: 62},
+            {id: 163, district: "Mayiladuthurai", crop: "Sugarcane", season: "Kharif", year: 2024, area_yield: 800, production: 4000, avg_rainfall: 650, market_price: 24},
+            {id: 164, district: "Nagapattinam", crop: "Grapes", season: "Rabi", year: 2024, area_yield: 350, production: 1600, avg_rainfall: 500, market_price: 60},
+            {id: 165, district: "Namakkal", crop: "Paddy", season: "Kharif", year: 2024, area_yield: 550, production: 2750, avg_rainfall: 600, market_price: 20},
+            {id: 166, district: "Nilgiris", crop: "Tobacco", season: "Kharif", year: 2024, area_yield: 450, production: 2400, avg_rainfall: 700, market_price: 29},
+            {id: 167, district: "Perambalur", crop: "Rice", season: "Kharif", year: 2024, area_yield: 500, production: 2500, avg_rainfall: 700, market_price: 28},
+            {id: 168, district: "Pudukkottai", crop: "Groundnut", season: "Rabi", year: 2024, area_yield: 400, production: 1800, avg_rainfall: 600, market_price: 37},
+            {id: 169, district: "Dharmapuri", crop: "Maize", season: "Kharif", year: 2024, area_yield: 600, production: 3000, avg_rainfall: 500, market_price: 21},
+            {id: 170, district: "Dindigul", crop: "Turmeric", season: "Rabi", year: 2024, area_yield: 300, production: 1500, avg_rainfall: 550, market_price: 38}
+        ];
+        // Crop images mapping
+        const cropImages = {
+            rice: "https://images.unsplash.com/photo-1586201375761-83865001e31c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+            groundnut: "https://images.unsplash.com/photo-1628175589035-72599b2d8220?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+            maize: "https://images.unsplash.com/photo-1602898298167-3e759f5d0e6c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+            turmeric: "https://images.unsplash.com/photo-1628175589035-72599b2d8220?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+            cotton: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+            chillies: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+            sugarcane: "https://images.unsplash.com/photo-1587129095725-2711b0b4a3b5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+            mango: "https://images.unsplash.com/photo-1553279768-865429fa0078?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+            paddy: "https://images.unsplash.com/photo-1586201375761-83865001e31c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+            grapes: "https://images.unsplash.com/photo-1537640538966-79f369143f8f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+            tobacco: "https://images.unsplash.com/photo-1616594742763-7459e8e5a978?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+        };
+        // Tamil Nadu districts
+        const tamilNaduDistricts = [
+            {value: 'ariyalur', name: 'Ariyalur', translate: 'ariyalur'},
+            {value: 'chengalpattu', name: 'Chengalpattu', translate: 'chengalpattu'},
+            {value: 'chennai', name: 'Chennai', translate: 'chennai'},
+            {value: 'coimbatore', name: 'Coimbatore', translate: 'coimbatore'},
+            {value: 'cuddalore', name: 'Cuddalore', translate: 'cuddalore'},
+            {value: 'dharmapuri', name: 'Dharmapuri', translate: 'dharmapuri'},
+            {value: 'dindigul', name: 'Dindigul', translate: 'dindigul'},
+            {value: 'erode', name: 'Erode', translate: 'erode'},
+            {value: 'kallakurichi', name: 'Kallakurichi', translate: 'kallakurichi'},
+            {value: 'kanchipuram', name: 'Kanchipuram', translate: 'kanchipuram'},
+            {value: 'kanyakumari', name: 'Kanyakumari', translate: 'kanyakumari'},
+            {value: 'karur', name: 'Karur', translate: 'karur'},
+            {value: 'krishnagiri', name: 'Krishnagiri', translate: 'krishnagiri'},
+            {value: 'madurai', name: 'Madurai', translate: 'madurai'},
+            {value: 'mayiladuthurai', name: 'Mayiladuthurai', translate: 'mayiladuthurai'},
+            {value: 'nagapattinam', name: 'Nagapattinam', translate: 'nagapattinam'},
+            {value: 'namakkal', name: 'Namakkal', translate: 'namakkal'},
+            {value: 'nilgiris', name: 'Nilgiris', translate: 'nilgiris'},
+            {value: 'perambalur', name: 'Perambalur', translate: 'perambalur'},
+            {value: 'pudukkottai', name: 'Pudukkottai', translate: 'pudukkottai'},
+            {value: 'ramanathapuram', name: 'Ramanathapuram', translate: 'ramanathapuram'},
+            {value: 'ranipet', name: 'Ranipet', translate: 'ranipet'},
+            {value: 'salem', name: 'Salem', translate: 'salem'},
+            {value: 'sivaganga', name: 'Sivaganga', translate: 'sivaganga'},
+            {value: 'tenkasi', name: 'Tenkasi', translate: 'tenkasi'},
+            {value: 'thanjavur', name: 'Thanjavur', translate: 'thanjavur'},
+            {value: 'theni', name: 'Theni', translate: 'theni'},
+            {value: 'thoothukudi', name: 'Thoothukudi', translate: 'thoothukudi'},
+            {value: 'tiruchirappalli', name: 'Tiruchirappalli', translate: 'tiruchirappalli'},
+            {value: 'tirunelveli', name: 'Tirunelveli', translate: 'tirunelveli'},
+            {value: 'tirupathur', name: 'Tirupathur', translate: 'tirupathur'},
+            {value: 'tiruppur', name: 'Tiruppur', translate: 'tiruppur'},
+            {value: 'tiruvallur', name: 'Tiruvallur', translate: 'tiruvallur'},
+            {value: 'tiruvannamalai', name: 'Tiruvannamalai', translate: 'tiruvannamalai'},
+            {value: 'tiruvarur', name: 'Tiruvarur', translate: 'tiruvarur'},
+            {value: 'vellore', name: 'Vellore', translate: 'vellore'},
+            {value: 'viluppuram', name: 'Viluppuram', translate: 'viluppuram'},
+            {value: 'virudhunagar', name: 'Virudhunagar', translate: 'virudhunagar'}
+        ];
+        // Andhra Pradesh districts
+        const andhraDistricts = [
+            {value: 'anantapur', name: 'Anantapur', translate: 'anantapur'},
+            {value: 'visakhapatnam', name: 'Visakhapatnam', translate: 'visakhapatnam'},
+            {value: 'kurnool', name: 'Kurnool', translate: 'kurnool'},
+            {value: 'guntur', name: 'Guntur', translate: 'guntur'},
+            {value: 'prakasam', name: 'Prakasam', translate: 'prakasam'},
+            {value: 'kadapa', name: 'Kadapa', translate: 'kadapa'},
+            {value: 'srikakulam', name: 'Srikakulam', translate: 'srikakulam'},
+            {value: 'vizianagaram', name: 'Vizianagaram', translate: 'vizianagaram'},
+            {value: 'eastgodavari', name: 'East Godavari', translate: 'eastgodavari'},
+            {value: 'westgodavari', name: 'West Godavari', translate: 'westgodavari'},
+            {value: 'chittoor', name: 'Chittoor', translate: 'chittoor'}
+        ];
+        // Translations
+        const translations = {
+            te: {
+                title: "రైతు సమాచార వేదిక",
+                subtitle: "ధరలు, వాతావరణం మరియు అంచనాల సమాచారం",
+                filters: "వడపోత ఎంపికలు",
+                state: "రాష్ట్రం",
+                andhra: "ఆంధ్రప్రదేశ్",
+                tamilnadu: "తమిళనాడు",
+                district: "జిల్లా",
+                anantapur: "అనంతపురం",
+                visakhapatnam: "విశాఖపట్నం",
+                kurnool: "కర్నూలు",
+                guntur: "గుంటూరు",
+                prakasam: "ప్రకాశం",
+                kadapa: "కడప",
+                srikakulam: "శ్రీకాకుళం",
+                vizianagaram: "విజయనగరం",
+                eastgodavari: "తూర్పు గోదావరి",
+                westgodavari: "పశ్చిమ గోదావరి",
+                chittoor: "చిత్తూరు",
+                crop: "పంట",
+                rice: "వరి",
+                groundnut: "వేరుశనగ",
+                maize: "మొక్కజొన్న",
+                turmeric: "పసుపు",
+                cotton: "పత్తి",
+                chillies: "మిరప",
+                sugarcane: "చెరకు",
+                mango: "మామిడి",
+                paddy: "వరి",
+                grapes: "ద్రాక్ష",
+                tobacco: "పొగాకు",
+                search: "సమాచారం పొందండి",
+                priceInfo: "ధర సమాచారం",
+                currentPrice: "ప్రస్తుత ధర",
+                lastYearPrice: "గత సంవత్సరం ధర",
+                increase: "పెరిగింది",
+                decrease: "తగ్గింది",
+                nextYearPrediction: "తదుపరి సంవత్సరం అంచనా",
+                predictedIncrease: "పెరగనుంది",
+                predictedDecrease: "తగ్గనుంది",
+                weatherInfo: "వాతావరణ సమాచారం",
+                kharif: "ఖరీఫ్",
+                rabi: "రబీ",
+                summer: "వేసవి",
+                rainfall: "సగటు వర్షపాతం",
+                temperature: "సగటు ఉష్ణోగ్రత",
+                production: "ఉత్పత్తి",
+                areaYield: "ప్రాంత దిగుబడి",
+                about: "గురించి",
+                aboutText: "ఈ వేదిక రైతులకు పంట ధరలు, వాతావరణ పరిస్థితులు మరియు భవిష్యత్ అంచనాలను అందిస్తుంది.",
+                contact: "సంప్రదింపులు",
+                contactText: "సహాయం కోసం దయచేసి మాతో సంప్రదించండి: farmerinfo@example.com",
+                copyright: "&copy; 2024 రైతు సమాచార వేదిక. అన్ని హక్కులు ప్రత్యేకించబడ్డాయి.",
+                noDataFound: "డేటా కనుగొనబడలేదు. దయచేసి మరొక ఎంపికను ప్రయత్నించండి.",
+                dataFound: "డేటా విజయవంతంగా కనుగొనబడింది!"
+            },
+            ta: {
+                title: "விவசாய தகவல் தளம்",
+                subtitle: "விலை, வானிலை மற்றும் கணிப்பு தகவல்கள்",
+                filters: "வடிகட்டி தேர்வுகள்",
+                state: "மாநிலம்",
+                andhra: "ஆந்திரப் பிரதேசம்",
+                tamilnadu: "தமிழ்நாடு",
+                district: "மாவட்டம்",
+                anantapur: "அனந்தபூர்",
+                visakhapatnam: "விசாகப்பட்டினம்",
+                kurnool: "கர்நூல்",
+                guntur: "குண்டூர்",
+                prakasam: "பிரகாசம்",
+                kadapa: "கடப்பா",
+                srikakulam: "ஸ்ரீகாகுளம்",
+                vizianagaram: "விஜயநகரம்",
+                eastgodavari: "கிழக்கு கோதாவரி",
+                westgodavari: "மேற்கு கோதாவரி",
+                chittoor: "சித்தூர்",
+                crop: "பயிர்",
+                rice: "நெல்",
+                groundnut: "நிலக்கடலை",
+                maize: "சோளம்",
+                turmeric: "மஞ்சள்",
+                cotton: "பருத்தி",
+                chillies: "மிளகாய்",
+                sugarcane: "கரும்பு",
+                mango: "மாங்காய்",
+                paddy: "நெல்",
+                grapes: "திராட்சை",
+                tobacco: "புகையிலை",
+                search: "தகவல் பெறுங்கள்",
+                priceInfo: "விலை தகவல்",
+                currentPrice: "தற்போதைய விலை",
+                lastYearPrice: "கடந்த ஆண்டு விலை",
+                increase: "அதிகரித்தது",
+                decrease: "குறைந்தது",
+                nextYearPrediction: "அடுத்த ஆண்டு கணிப்பு",
+                predictedIncrease: "அதிகரிக்கும்",
+                predictedDecrease: "குறையும்",
+                weatherInfo: "வானிலை தகவல்",
+                kharif: "காரிப்",
+                rabi: "ரபி",
+                summer: "கோடை",
+                rainfall: "சராசரி மழைவீழ்ச்சி",
+                temperature: "சராசரி வெப்பநிலை",
+                production: "உற்பத்தி",
+                areaYield: "பகுதி மகசூல்",
+                about: "பற்றி",
+                aboutText: "இந்த தளம் விவசாயிகளுக்கு பயிர் விலைகள், வானிலை நிலைகள் மற்றும் எதிர்கால கணிப்புகளை வழங்குகிறது.",
+                contact: "தொடர்பு கொள்ள",
+                contactText: "உதவிக்கு எங்களை தொடர்பு கொள்ளவும்: farmerinfo@example.com",
+                copyright: "&copy; 2024 விவசாய தகவல் தளம். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
+                noDataFound: "தரவு கிடைக்கவில்லை. தயவுசெய்து மற்றொரு விருப்பத்தை முயற்சிக்கவும்.",
+                dataFound: "தரவு வெற்றிகரமாக கண்டறியப்பட்டது!"
+            },
+            en: {
+                title: "Farmer Information Portal",
+                subtitle: "Price, Weather and Forecast Information",
+                filters: "Filter Options",
+                state: "State",
+                andhra: "Andhra Pradesh",
+                tamilnadu: "Tamil Nadu",
+                district: "District",
+                anantapur: "Anantapur",
+                visakhapatnam: "Visakhapatnam",
+                kurnool: "Kurnool",
+                guntur: "Guntur",
+                prakasam: "Prakasam",
+                kadapa: "Kadapa",
+                srikakulam: "Srikakulam",
+                vizianagaram: "Vizianagaram",
+                eastgodavari: "East Godavari",
+                westgodavari: "West Godavari",
+                chittoor: "Chittoor",
+                crop: "Crop",
+                rice: "Rice",
+                groundnut: "Groundnut",
+                maize: "Maize",
+                turmeric: "Turmeric",
+                cotton: "Cotton",
+                chillies: "Chillies",
+                sugarcane: "Sugarcane",
+                mango: "Mango",
+                paddy: "Paddy",
+                grapes: "Grapes",
+                tobacco: "Tobacco",
+                search: "Get Information",
+                priceInfo: "Price Information",
+                currentPrice: "Current Price",
+                lastYearPrice: "Last Year Price",
+                increase: "Increased",
+                decrease: "Decreased",
+                nextYearPrediction: "Next Year Prediction",
+                predictedIncrease: "Will Increase",
+                predictedDecrease: "Will Decrease",
+                weatherInfo: "Weather Information",
+                kharif: "Kharif",
+                rabi: "Rabi",
+                summer: "Summer",
+                rainfall: "Average Rainfall",
+                temperature: "Average Temperature",
+                production: "Production",
+                areaYield: "Area Yield",
+                about: "About",
+                aboutText: "This platform provides farmers with crop prices, weather conditions and future forecasts.",
+                contact: "Contact",
+                contactText: "For help, please contact us: farmerinfo@example.com",
+                copyright: "&copy; 2024 Farmer Information Portal. All rights reserved.",
+                noDataFound: "No data found. Please try another selection.",
+                dataFound: "Data found successfully!"
+            }
+        };
+        // Current language
+        let currentLang = 'te';
+        // DOM elements
+        const langButtons = document.querySelectorAll('.lang-btn');
+        const stateSelect = document.getElementById('stateSelect');
+        const districtSelect = document.getElementById('districtSelect');
+        const cropSelect = document.getElementById('cropSelect');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const alertContainer = document.getElementById('alertContainer');
+        // Language switching
+        langButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                langButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                button.classList.add('active');
+                // Set current language
+                currentLang = button.dataset.lang;
+                // Update translations
+                updateTranslations();
+                // Update districts based on state
+                updateDistricts();
+            });
+        });
+        // Update translations
+        function updateTranslations() {
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[currentLang][key]) {
+                    element.textContent = translations[currentLang][key];
+                }
+            });
+            // Update select options
+            document.querySelectorAll('select option').forEach(option => {
+                const key = option.getAttribute('data-translate');
+                if (key && translations[currentLang][key]) {
+                    option.textContent = translations[currentLang][key];
+                }
+            });
+        }
+        // Update districts based on state
+        function updateDistricts() {
+            const state = stateSelect.value;
+            districtSelect.innerHTML = '';
+            if (state === 'ap') {
+                // Andhra Pradesh districts
+                andhraDistricts.forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district.value;
+                    option.setAttribute('data-translate', district.translate);
+                    option.textContent = translations[currentLang][district.translate];
+                    districtSelect.appendChild(option);
+                });
+            } else {
+                // Tamil Nadu districts
+                tamilNaduDistricts.forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district.value;
+                    option.setAttribute('data-translate', district.translate);
+                    option.textContent = translations[currentLang][district.translate] || district.name;
+                    districtSelect.appendChild(option);
+                });
+            }
+        }
+        // State change event
+        stateSelect.addEventListener('change', updateDistricts);
+        // Show alert message
+        function showAlert(message, type = 'info') {
+            const alert = document.createElement('div');
+            alert.className = 'custom-alert alert-' + type;
+            alert.textContent = message;
+            
+            alertContainer.appendChild(alert);
+            
+            // Auto remove alert after 3 seconds
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    if (alertContainer.contains(alert)) {
+                        alertContainer.removeChild(alert);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        // Search button click event
+        searchBtn.addEventListener('click', () => {
+            const state = stateSelect.value;
+            const district = districtSelect.value;
+            const crop = cropSelect.value;
+            // Find matching data
+            let matchingData = null;
+            let dataSource = state === 'ap' ? andhraData : tamilNaduData;
+            
+            // Normalize district name for comparison
+            const normalizedDistrict = district.toLowerCase();
+            
+            matchingData = dataSource.find(data => {
+                const dataDistrict = data.district.toLowerCase().replace(/\s+/g, '');
+                return dataDistrict === normalizedDistrict && data.crop.toLowerCase() === crop;
+            });
+            
+            if (matchingData) {
+                // Show results container
+                resultsContainer.style.display = 'flex';
+                
+                // Show success alert
+                showAlert(translations[currentLang].dataFound, 'success');
+                
+                // Update crop image and details
+                const cropImage = document.getElementById('cropImage');
+                const cropName = document.getElementById('cropName');
+                const cropSeason = document.getElementById('cropSeason');
+                
+                cropImage.src = cropImages[crop.toLowerCase()] || cropImages['rice'];
+                cropImage.alt = matchingData.crop;
+                
+                // Update crop name based on language
+                if (currentLang === 'te') {
+                    cropName.textContent = translations[currentLang][crop.toLowerCase()] || matchingData.crop;
+                } else if (currentLang === 'ta') {
+                    cropName.textContent = translations[currentLang][crop.toLowerCase()] || matchingData.crop;
+                } else {
+                    cropName.textContent = matchingData.crop;
+                }
+                
+                // Update crop season based on language
+                cropSeason.textContent = translations[currentLang][matchingData.season.toLowerCase()];
+                
+                // Update price information
+                const currentPrice = matchingData.market_price;
+                const lastYearPrice = currentPrice * 0.9; // Simulate last year's price (10% less)
+                const priceChange = ((currentPrice - lastYearPrice) / lastYearPrice * 100).toFixed(1);
+                const nextYearPrice = currentPrice * 1.1; // Simulate next year's price (10% more)
+                const nextYearChange = ((nextYearPrice - currentPrice) / currentPrice * 100).toFixed(1);
+                
+                document.getElementById('currentPrice').textContent = '₹' + currentPrice;
+                document.getElementById('lastYearPrice').textContent = '₹' + lastYearPrice.toFixed(0);
+                
+                const priceChangeElement = document.getElementById('priceChange');
+                if (priceChange > 0) {
+                    priceChangeElement.className = 'price-change price-up';
+                    priceChangeElement.innerHTML = '<span>▲ ' + priceChange + '% <span data-translate="increase">' + translations[currentLang].increase + '</span></span>';
+                } else {
+                    priceChangeElement.className = 'price-change price-down';
+                    priceChangeElement.innerHTML = '<span>▼ ' + Math.abs(priceChange) + '% <span data-translate="decrease">' + translations[currentLang].decrease + '</span></span>';
+                }
+                
+                document.getElementById('nextYearPrice').textContent = '₹' + nextYearPrice.toFixed(0);
+                
+                const nextYearChangeElement = document.getElementById('nextYearChange');
+                if (nextYearChange > 0) {
+                    nextYearChangeElement.className = 'price-change price-up';
+                    nextYearChangeElement.innerHTML = '<span>▲ ' + nextYearChange + '% <span data-translate="predictedIncrease">' + translations[currentLang].predictedIncrease + '</span></span>';
+                } else {
+                    nextYearChangeElement.className = 'price-change price-down';
+                    nextYearChangeElement.innerHTML = '<span>▼ ' + Math.abs(nextYearChange) + '% <span data-translate="predictedDecrease">' + translations[currentLang].predictedDecrease + '</span></span>';
+                }
+                
+                // Update weather information
+                const seasonElement = document.getElementById('season');
+                seasonElement.textContent = translations[currentLang][matchingData.season.toLowerCase()];
+                
+                document.getElementById('avgRainfall').textContent = matchingData.avg_rainfall + 'mm';
+                document.getElementById('avgTemp').textContent = (25 + Math.random() * 10).toFixed(0) + '°C'; // Random temp between 25-35°C
+                
+                const productionUnit = currentLang === 'te' ? 'క్వింటాలు' : currentLang === 'ta' ? 'குவிண்டல்' : 'Quintals';
+                document.getElementById('production').textContent = matchingData.production + ' ' + productionUnit;
+                
+                const areaUnit = currentLang === 'te' ? 'హెక్టార్లు' : currentLang === 'ta' ? 'ஹெக்டேர்' : 'Hectares';
+                document.getElementById('areaYield').textContent = matchingData.area_yield + ' ' + areaUnit;
+                
+                // Update weather icon based on rainfall
+                const weatherIcon = document.querySelector('.weather-icon');
+                if (matchingData.avg_rainfall > 600) {
+                    weatherIcon.textContent = '🌧'; // Heavy rain
+                } else if (matchingData.avg_rainfall > 400) {
+                    weatherIcon.textContent = '🌦'; // Moderate rain
+                } else {
+                    weatherIcon.textContent = '☀'; // Sunny
+                }
+            } else {
+                // Show no results message
+                showAlert(translations[currentLang].noDataFound, 'danger');
+                resultsContainer.style.display = 'none';
+            }
+        });
+        // Initialize the page
+        updateTranslations();
+        updateDistricts();
+    </script>
+</body>
+</html>
